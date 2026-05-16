@@ -5,6 +5,8 @@ import plotly.express as px
 from utils.data_cleaner import DataCleaner
 from logic.inventory_analysis import InventoryAnalyzer
 from logic.recommendation_engine import RecommendationEngine
+from logic.forecasting import DemandForecaster
+from logic.ai_assistant import AIInventoryAssistant
 from database.db import DatabaseManager
 
 # ---------------------------------------------------
@@ -24,6 +26,8 @@ st.set_page_config(
 cleaner = DataCleaner()
 analyzer = InventoryAnalyzer()
 recommendation_engine = RecommendationEngine()
+forecaster = DemandForecaster()
+ai_assistant = AIInventoryAssistant()
 db_manager = DatabaseManager()
 
 db_manager.create_inventory_table()
@@ -95,6 +99,14 @@ if inventory_file and sales_file:
     # Generate recommendations
     final_df = recommendation_engine.apply_recommendations(
         analysis_df
+    )
+    # Run forecasting pipeline
+    final_df = forecaster.run_forecast_pipeline(
+        final_df
+    )
+    # Generate AI insights
+    ai_insights = ai_assistant.generate_insights(
+        final_df
     )
     # Save analysis to database
     db_manager.save_analysis_to_database(final_df)
@@ -247,6 +259,48 @@ if inventory_file and sales_file:
 
     st.plotly_chart(
         fig_weeks,
+        use_container_width=True
+    )
+    # ---------------------------------------------------
+    # AI INVENTORY ASSISTANT
+    # ---------------------------------------------------
+
+    st.header("🤖 AI Inventory Assistant")
+
+    for insight in ai_insights:
+
+        st.info(insight)
+    # ---------------------------------------------------
+    # FORECASTING ANALYTICS
+    # ---------------------------------------------------
+
+    st.header("🔮 Demand Forecasting")
+
+    st.dataframe(
+        final_df[
+            [
+                "product_name",
+                "weekly_sales",
+                "forecast_4_week_demand",
+                "projected_stock_4_weeks",
+                "future_stock_risk"
+            ]
+        ],
+        use_container_width=True
+    )
+
+    # Forecast Chart
+
+    fig_forecast = px.bar(
+        final_df,
+        x="product_name",
+        y="forecast_4_week_demand",
+        color="future_stock_risk",
+        title="Forecasted 4-Week Demand"
+    )
+
+    st.plotly_chart(
+        fig_forecast,
         use_container_width=True
     )
     # ---------------------------------------------------
