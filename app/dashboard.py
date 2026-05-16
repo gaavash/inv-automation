@@ -1,10 +1,11 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 from utils.data_cleaner import DataCleaner
 from logic.inventory_analysis import InventoryAnalyzer
 from logic.recommendation_engine import RecommendationEngine
-
+from database.db import DatabaseManager
 
 # ---------------------------------------------------
 # PAGE CONFIG
@@ -23,7 +24,9 @@ st.set_page_config(
 cleaner = DataCleaner()
 analyzer = InventoryAnalyzer()
 recommendation_engine = RecommendationEngine()
+db_manager = DatabaseManager()
 
+db_manager.create_inventory_table()
 
 # ---------------------------------------------------
 # TITLE
@@ -93,6 +96,8 @@ if inventory_file and sales_file:
     final_df = recommendation_engine.apply_recommendations(
         analysis_df
     )
+    # Save analysis to database
+    db_manager.save_analysis_to_database(final_df)
 
     # ---------------------------------------------------
     # KPI SECTION
@@ -164,7 +169,98 @@ if inventory_file and sales_file:
         ],
         use_container_width=True
     )
+    # ---------------------------------------------------
+    # VISUAL ANALYTICS
+    # ---------------------------------------------------
 
+    st.header("📈 Visual Analytics")
+
+    # Inventory Status Distribution
+    status_counts = (
+        final_df["inventory_status"]
+        .value_counts()
+        .reset_index()
+    )
+
+    status_counts.columns = [
+        "Inventory Status",
+        "Count"
+    ]
+
+    fig_status = px.pie(
+        status_counts,
+        names="Inventory Status",
+        values="Count",
+        title="Inventory Status Distribution"
+    )
+
+    st.plotly_chart(
+        fig_status,
+        use_container_width=True
+    )
+
+    # ---------------------------------------------------
+
+    st.subheader("📦 Current Stock Levels")
+
+    fig_stock = px.bar(
+        final_df,
+        x="product_name",
+        y="current_stock",
+        color="inventory_status",
+        title="Current Stock by Product"
+    )
+
+    st.plotly_chart(
+        fig_stock,
+        use_container_width=True
+    )
+
+    # ---------------------------------------------------
+
+    st.subheader("🔥 Weekly Sales Performance")
+
+    fig_sales = px.bar(
+        final_df,
+        x="product_name",
+        y="weekly_sales",
+        color="inventory_status",
+        title="Weekly Sales by Product"
+    )
+
+    st.plotly_chart(
+        fig_sales,
+        use_container_width=True
+    )
+
+    # ---------------------------------------------------
+
+    st.subheader("⏳ Weeks of Inventory Remaining")
+
+    fig_weeks = px.bar(
+        final_df,
+        x="product_name",
+        y="weeks_of_inventory",
+        color="inventory_status",
+        title="Weeks of Inventory Remaining"
+    )
+
+    st.plotly_chart(
+        fig_weeks,
+        use_container_width=True
+    )
+    # ---------------------------------------------------
+    # DATABASE HISTORY
+    # ---------------------------------------------------
+
+    st.header("🗄 Historical Inventory Records")
+
+    historical_df = db_manager.load_inventory_data()
+
+    st.dataframe(
+        historical_df.tail(20),
+        use_container_width=True
+    )
     # ---------------------------------------------------
     # REORDER PRODUCTS
     # ---------------------------------------------------
