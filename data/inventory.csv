@@ -1,0 +1,6 @@
+product_id,product_name,category,current_stock,reorder_level,supplier
+101,Shampoo,Personal Care,20,50,Supplier A
+102,Conditioner,Personal Care,80,40,Supplier A
+103,Soap,Body Care,10,30,Supplier B
+104,Toothpaste,Oral Care,100,50,Supplier C
+105,Lotion,Skin Care,15,25,Supplier D
