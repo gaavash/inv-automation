@@ -1,4 +1,4 @@
-# 📦 MontFlow-Inventory
+# 📦 Inv-Automation
 
 Retail Inventory Workflow Automation & Recommendation System
 
