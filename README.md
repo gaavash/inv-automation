@@ -10,7 +10,7 @@ Built using Python, pandas, SQL, and Streamlit.
 
 # 🚀 Features
 
-## ✅ Data Cleaning Pipeline
+## ✅ Data Cleaning Pipelines
 - CSV upload support
 - Missing value handling
 - Duplicate removal
